@@ -6,4 +6,6 @@ Deep_research_agent.egg-info/requires.txt
 Deep_research_agent.egg-info/top_level.txt
 src/deep_research_from_scratch/__init__.py
 src/deep_research_from_scratch/prompts.py
+src/deep_research_from_scratch/research_agent_scope.py
+src/deep_research_from_scratch/state_research.py
 src/deep_research_from_scratch/state_scope.py

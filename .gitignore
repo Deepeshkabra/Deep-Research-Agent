@@ -2,3 +2,7 @@
 **/.env.*
 **/__pycache__
 **/.venv
+**/.cursorignore
+Personal_notes/
+.langgraph_api/
+eval/
