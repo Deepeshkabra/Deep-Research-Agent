@@ -26,6 +26,8 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_API_KEY_2 = os.getenv("OPENROUTER_API_KEY_2")
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
 # ===== UTILITY FUNCTIONS =====
 
 def get_today_str() -> str:
@@ -36,7 +38,7 @@ def get_today_str() -> str:
 # ===== CONFIGURATION =====
 
 # Initialize model
-model = ChatOpenAI(model="openai/gpt-oss-20b:free", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY)
+model = ChatOpenAI(model="gpt-oss-120b", temperature=0.0, base_url="https://langgraph-agents-testing.openai.azure.com/openai/v1/", api_key=AZURE_OPENAI_API_KEY)
 
 # ===== WORKFLOW NODES =====
 
