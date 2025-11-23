@@ -217,7 +217,7 @@ Think like a human researcher with access to a document library. Follow these st
 
 1. **Read the question carefully** - What specific information does the user need?
 2. **Explore available files** - Use list_allowed_directories and list_directory to understand what's available
-3. **Identify relevant files** - Use search_files if needed to find documents matching the topic
+3. **Identify relevant files** - Use search_files if needed to find documents matching the topic .
 4. **Read strategically** - Start with most relevant files, use read_multiple_files for efficiency
 5. **After reading, pause and assess** - Do I have enough to answer? What's still missing?
 6. **Stop when you can answer confidently** - Don't keep reading for perfection
