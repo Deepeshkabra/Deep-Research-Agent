@@ -38,7 +38,11 @@ def get_today_str() -> str:
 # ===== CONFIGURATION =====
 
 # Initialize model
-model = ChatOpenAI(model="gpt-oss-120b", temperature=0.0, base_url="https://langgraph-agents-testing.openai.azure.com/openai/v1/", api_key=AZURE_OPENAI_API_KEY)
+model = ChatOpenAI(model="gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY_2, extra_body={
+    "provider": {
+      "order": ["deepinfra"],
+    }
+  },)
 
 # ===== WORKFLOW NODES =====
 

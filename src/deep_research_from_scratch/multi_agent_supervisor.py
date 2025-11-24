@@ -72,7 +72,11 @@ except ImportError:
 OPENROUTER_API_KEY_2 = os.getenv("OPENROUTER_API_KEY_2")
 
 supervisor_tools = [ConductResearch, ResearchComplete, think_tool]
-supervisor_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY_2)
+supervisor_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY_2, extra_body={
+    "provider": {
+      "order": ["deepinfra"],
+    }
+  },)
 supervisor_model_with_tools = supervisor_model.bind_tools(supervisor_tools)
 
 # System constants
