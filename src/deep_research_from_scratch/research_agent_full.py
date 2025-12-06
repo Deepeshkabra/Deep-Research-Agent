@@ -12,7 +12,7 @@ The system orchestrates the complete research workflow from initial user
 input through final report delivery.
 """
 
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import StateGraph, START, END
 
 from deep_research_from_scratch.utils import get_today_str
@@ -26,10 +26,10 @@ from deep_research_from_scratch.multi_agent_supervisor import supervisor_agent
 import os
 from dotenv import load_dotenv
 load_dotenv()
-OPENROUTER_API_KEY_2 = os.getenv("OPENROUTER_API_KEY_2")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 from langchain_openai import ChatOpenAI
-writer_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY_2, max_tokens=64000, extra_body={
+writer_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY, max_tokens=64000, extra_body={
     "provider": {
       "order": ["deepinfra"],
       "allow_fallbacks": False  # Optional: prevents falling back to other providers
@@ -63,7 +63,7 @@ async def final_report_generation(state: AgentState):
 
     return {
         "final_report": final_report.content, 
-        "messages": ["Here is the final report: " + final_report.content],
+        "messages": [AIMessage(content=final_report.content)],
     }
 
 # ===== GRAPH CONSTRUCTION =====

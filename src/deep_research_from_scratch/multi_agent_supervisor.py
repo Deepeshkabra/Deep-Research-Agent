@@ -69,10 +69,10 @@ except ImportError:
 
 # ===== CONFIGURATION =====
 # Initialize API keys
-OPENROUTER_API_KEY_2 = os.getenv("OPENROUTER_API_KEY_2")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 supervisor_tools = [ConductResearch, ResearchComplete, think_tool]
-supervisor_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY_2, extra_body={
+supervisor_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY, extra_body={
     "provider": {
       "order": ["deepinfra"],
     }
