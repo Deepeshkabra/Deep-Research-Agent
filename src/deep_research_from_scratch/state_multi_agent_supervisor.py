@@ -1,22 +1,21 @@
 
-"""
-State Definitions for Multi-Agent Research Supervisor
+"""State Definitions for Multi-Agent Research Supervisor.
 
 This module defines the state objects and tools used for the multi-agent
 research supervisor workflow, including coordination state and research tools.
 """
 
 import operator
-from typing_extensions import Annotated, TypedDict, Sequence
 
 from langchain_core.messages import BaseMessage
 from langchain_core.tools import tool
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
+from typing_extensions import Annotated, Sequence, TypedDict
+
 
 class SupervisorState(TypedDict):
-    """
-    State for the multi-agent research supervisor.
+    """State for the multi-agent research supervisor.
 
     Manages coordination between supervisor and research agents, tracking
     research progress and accumulating findings from multiple sub-agents.

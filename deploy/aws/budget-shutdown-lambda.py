@@ -1,6 +1,4 @@
-"""
-AWS Lambda function to auto-shutdown ECS tasks when budget threshold is reached.
-Triggered by AWS Budget alerts via SNS.
+"""AWS Lambda function to auto-shutdown ECS tasks when budget threshold is reached. Triggered by AWS Budget alerts via SNS.
 
 To deploy this Lambda:
 1. Zip this file: zip budget-shutdown-lambda.zip budget-shutdown-lambda.py
@@ -9,14 +7,14 @@ To deploy this Lambda:
 4. Subscribe this Lambda to your budget alert SNS topic
 """
 
-import boto3
 import json
 import os
 
+import boto3
+
 
 def lambda_handler(event, context):
-    """
-    Stop ECS service when budget threshold is reached.
+    """Stop ECS service when budget threshold is reached.
     
     This function is triggered by SNS notifications from AWS Budgets.
     When the budget threshold (90%) is exceeded, it scales the ECS service

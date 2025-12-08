@@ -12,29 +12,29 @@ maintaining isolated context windows for each research topic.
 
 import asyncio
 import os
-from dotenv import load_dotenv
-load_dotenv() 
-from typing_extensions import Literal
 
-from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
 from langchain_core.messages import (
-    HumanMessage, 
-    BaseMessage, 
-    SystemMessage, 
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
     ToolMessage,
-    filter_messages
+    filter_messages,
 )
-from langgraph.graph import StateGraph, START, END
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command
+from typing_extensions import Literal
 
 from deep_research_from_scratch.prompts import lead_researcher_prompt
 from deep_research_from_scratch.research_agent import researcher_agent
 from deep_research_from_scratch.state_multi_agent_supervisor import (
-    SupervisorState, 
-    ConductResearch, 
-    ResearchComplete
+    ConductResearch,
+    ResearchComplete,
+    SupervisorState,
 )
 from deep_research_from_scratch.utils import get_today_str, think_tool
+
 
 def get_notes_from_tool_calls(messages: list[BaseMessage]) -> list[str]:
     """Extract research notes from ToolMessage objects in supervisor message history.
@@ -69,6 +69,7 @@ except ImportError:
 
 # ===== CONFIGURATION =====
 # Initialize API keys
+load_dotenv()
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 supervisor_tools = [ConductResearch, ResearchComplete, think_tool]

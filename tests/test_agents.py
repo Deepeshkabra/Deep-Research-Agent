@@ -33,9 +33,11 @@ class TestImports:
 
     def test_import_states(self):
         """Test importing state modules."""
-        from deep_research_from_scratch import state_research
-        from deep_research_from_scratch import state_scope
-        from deep_research_from_scratch import state_multi_agent_supervisor
+        from deep_research_from_scratch import (
+            state_multi_agent_supervisor,
+            state_research,
+            state_scope,
+        )
         
         assert state_research is not None
         assert state_scope is not None
@@ -121,8 +123,9 @@ class TestUtilityFunctions:
 
     def test_get_current_dir(self):
         """Test that get_current_dir returns a valid path."""
-        from deep_research_from_scratch.utils import get_current_dir
         from pathlib import Path
+
+        from deep_research_from_scratch.utils import get_current_dir
         
         result = get_current_dir()
         assert isinstance(result, Path)
@@ -163,7 +166,9 @@ class TestStateSchemas:
 
     def test_supervisor_state_fields(self):
         """Test SupervisorState has required fields."""
-        from deep_research_from_scratch.state_multi_agent_supervisor import SupervisorState
+        from deep_research_from_scratch.state_multi_agent_supervisor import (
+            SupervisorState,
+        )
         
         assert hasattr(SupervisorState, '__annotations__')
         annotations = SupervisorState.__annotations__
@@ -179,8 +184,9 @@ class TestIntegration:
     @pytest.mark.asyncio
     async def test_research_agent_basic_query(self):
         """Test research agent with a simple query."""
-        from deep_research_from_scratch.research_agent import researcher_agent
         from langchain_core.messages import HumanMessage
+
+        from deep_research_from_scratch.research_agent import researcher_agent
         
         result = await researcher_agent.ainvoke({
             "researcher_messages": [

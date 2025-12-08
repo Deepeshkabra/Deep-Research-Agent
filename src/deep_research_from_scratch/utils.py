@@ -5,18 +5,19 @@ This module provides search and content processing utilities for the research ag
 including web search capabilities and content summarization tools.
 """
 
-from pathlib import Path
+import os
 from datetime import datetime
+from pathlib import Path
+
+from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage
+from langchain_core.tools import InjectedToolArg, tool
+from langchain_openai import ChatOpenAI
+from tavily import TavilyClient
 from typing_extensions import Annotated, List, Literal
 
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage
-from langchain_core.runnables import RunnableConfig
-from langchain_core.tools import tool, InjectedToolArg
-from tavily import TavilyClient
-
-from deep_research_from_scratch.state_research import Summary
 from deep_research_from_scratch.prompts import summarize_webpage_prompt
+from deep_research_from_scratch.state_research import Summary
 
 # ===== UTILITY FUNCTIONS =====
 
@@ -39,9 +40,8 @@ def get_current_dir() -> Path:
         return Path.cwd()
 
 # ===== CONFIGURATION =====
-import os
-from dotenv import load_dotenv
-load_dotenv() 
+
+load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
@@ -67,7 +67,6 @@ def tavily_search_multiple(
     Returns:
         List of search result dictionaries
     """
-
     # Execute searches sequentially. Note: yon can use AsyncTavilyClient to parallelize this step.
     search_docs = []
     for query in search_queries:

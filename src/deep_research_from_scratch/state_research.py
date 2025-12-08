@@ -1,22 +1,21 @@
 
-"""
-State Definitions and Pydantic Schemas for Research Agent
+"""State Definitions and Pydantic Schemas for Research Agent.
 
 This module defines the state objects and structured schemas used for
 the research agent workflow, including researcher state management and output schemas.
 """
 
 import operator
-from typing_extensions import TypedDict, Annotated, List, Sequence
-from pydantic import BaseModel, Field
+
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
+from pydantic import BaseModel, Field
+from typing_extensions import Annotated, List, Sequence, TypedDict
 
 # ===== STATE DEFINITIONS =====
 
 class ResearcherState(TypedDict):
-    """
-    State for the research agent containing message history and research metadata.
+    """State for the research agent containing message history and research metadata.
 
     This state tracks the researcher's conversation, iteration count for limiting
     tool calls, the research topic being investigated, compressed findings,
@@ -29,8 +28,7 @@ class ResearcherState(TypedDict):
     raw_notes: Annotated[List[str], operator.add]
 
 class ResearcherOutputState(TypedDict):
-    """
-    Output state for the research agent containing final research results.
+    """Output state for the research agent containing final research results.
 
     This represents the final output of the research process with compressed
     research findings and all raw notes from the research process.

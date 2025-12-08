@@ -9,20 +9,27 @@ The workflow uses structured output to make deterministic decisions about
 whether sufficient context exists to proceed with research.
 """
 
+import os
 from datetime import datetime
-from json import load
+
+from dotenv import load_dotenv
+from langchain_core.messages import AIMessage, HumanMessage, get_buffer_string
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, START, StateGraph
+from langgraph.types import Command
 from typing_extensions import Literal
 
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, AIMessage, get_buffer_string
-from langgraph.graph import StateGraph, START, END
-from langgraph.types import Command
+from deep_research_from_scratch.prompts import (
+    clarify_with_user_instructions,
+    transform_messages_into_research_topic_prompt,
+)
+from deep_research_from_scratch.state_scope import (
+    AgentInputState,
+    AgentState,
+    ClarifyWithUser,
+    ResearchQuestion,
+)
 
-from deep_research_from_scratch.prompts import clarify_with_user_instructions, transform_messages_into_research_topic_prompt
-from deep_research_from_scratch.state_scope import AgentState, ClarifyWithUser, ResearchQuestion, AgentInputState
-
-import os
-from dotenv import load_dotenv
 load_dotenv() 
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -30,6 +37,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 # ===== UTILITY FUNCTIONS =====
 
 def get_today_str() -> str:
+    """Get current date in a human-readable format."""
     now = datetime.now()
     return now.strftime("%a %b") + f" {now.day}, {now.year}"
 
@@ -46,8 +54,7 @@ model = ChatOpenAI(model="gpt-oss-120b", temperature=0.0, base_url="https://open
 # ===== WORKFLOW NODES =====
 
 def clarify_with_user(state: AgentState) -> Command[Literal["write_research_brief", "__end__"]]:
-    """
-    Determine if the user's request contains sufficient information to proceed with research.
+    """Determine if the user's request contains sufficient information to proceed with research.
 
     Uses structured output to make deterministic decisions and avoid hallucination.
     Routes to either research brief generation or ends with a clarification question.
@@ -76,8 +83,7 @@ def clarify_with_user(state: AgentState) -> Command[Literal["write_research_brie
         )
 
 def write_research_brief(state: AgentState):
-    """
-    Transform the conversation history into a comprehensive research brief.
+    """Transform the conversation history into a comprehensive research brief.
 
     Uses structured output to ensure the brief follows the required format
     and contains all necessary details for effective research.

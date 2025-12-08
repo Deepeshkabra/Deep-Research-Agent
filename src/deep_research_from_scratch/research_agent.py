@@ -5,17 +5,29 @@ This module implements a research agent that can perform iterative web searches
 and synthesis to answer complex research questions.
 """
 
-from pydantic import BaseModel, Field
+import os
+
+from dotenv import load_dotenv
+from langchain_core.messages import (
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+    filter_messages,
+)
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, START, StateGraph
 from typing_extensions import Literal
 
-from langgraph.graph import StateGraph, START, END
-from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage, filter_messages
-from langchain_openai import ChatOpenAI
-from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
-
-from deep_research_from_scratch.state_research import ResearcherState, ResearcherOutputState
-from deep_research_from_scratch.utils import tavily_search, get_today_str, think_tool
-from deep_research_from_scratch.prompts import research_agent_prompt, compress_research_system_prompt, compress_research_human_message
+from deep_research_from_scratch.prompts import (
+    compress_research_human_message,
+    compress_research_system_prompt,
+    research_agent_prompt,
+)
+from deep_research_from_scratch.state_research import (
+    ResearcherOutputState,
+    ResearcherState,
+)
+from deep_research_from_scratch.utils import get_today_str, tavily_search, think_tool
 
 # ===== CONFIGURATION =====
 
@@ -24,8 +36,6 @@ tools = [tavily_search, think_tool]
 tools_by_name = {tool.name: tool for tool in tools}
 
 # Initialize models
-import os
-from dotenv import load_dotenv
 load_dotenv() 
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -85,7 +95,6 @@ def compress_research(state: ResearcherState) -> dict:
     Takes all the research messages and tool outputs and creates
     a compressed summary suitable for the supervisor's decision-making.
     """
-
     system_message = compress_research_system_prompt.format(date=get_today_str())
     messages = [SystemMessage(content=system_message)] + state.get("researcher_messages", []) + [HumanMessage(content=compress_research_human_message)]
     response = compress_model.invoke(messages)

@@ -1,6 +1,5 @@
 
-"""
-Full Multi-Agent Research System
+"""Full Multi-Agent Research System.
 
 This module integrates all components of the research system:
 - User clarification and scoping
@@ -12,23 +11,26 @@ The system orchestrates the complete research workflow from initial user
 input through final report delivery.
 """
 
-from langchain_core.messages import HumanMessage, AIMessage
-from langgraph.graph import StateGraph, START, END
-
-from deep_research_from_scratch.utils import get_today_str
-from deep_research_from_scratch.prompts import final_report_generation_prompt
-from deep_research_from_scratch.state_scope import AgentState, AgentInputState
-from deep_research_from_scratch.research_agent_scope import clarify_with_user, write_research_brief
-from deep_research_from_scratch.multi_agent_supervisor import supervisor_agent
-
 # ===== Config =====
-
 import os
+
 from dotenv import load_dotenv
+from langchain_core.messages import AIMessage, HumanMessage
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, START, StateGraph
+
+from deep_research_from_scratch.multi_agent_supervisor import supervisor_agent
+from deep_research_from_scratch.prompts import final_report_generation_prompt
+from deep_research_from_scratch.research_agent_scope import (
+    clarify_with_user,
+    write_research_brief,
+)
+from deep_research_from_scratch.state_scope import AgentInputState, AgentState
+from deep_research_from_scratch.utils import get_today_str
+
 load_dotenv()
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-from langchain_openai import ChatOpenAI
 writer_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY, max_tokens=64000, extra_body={
     "provider": {
       "order": ["deepinfra"],
@@ -40,15 +42,12 @@ writer_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url
 
 # ===== FINAL REPORT GENERATION =====
 
-from deep_research_from_scratch.state_scope import AgentState
 
 async def final_report_generation(state: AgentState):
-    """
-    Final report generation node.
+    """Generate a final report from the research findings.
 
     Synthesizes all research findings into a comprehensive final report
     """
-
     notes = state.get("notes", [])
 
     findings = "\n".join(notes)

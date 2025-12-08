@@ -15,21 +15,33 @@ Key features:
 """
 
 import os
+
 from dotenv import load_dotenv
-load_dotenv() 
+from langchain_core.messages import (
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+    filter_messages,
+)
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, START, StateGraph
 from typing_extensions import Literal
 
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage, filter_messages
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from langgraph.graph import StateGraph, START, END
-
-from deep_research_from_scratch.prompts import research_agent_prompt_with_mcp, compress_research_system_prompt, compress_research_human_message
-from deep_research_from_scratch.state_research import ResearcherState, ResearcherOutputState
-from deep_research_from_scratch.utils import get_today_str, think_tool, get_current_dir
+from deep_research_from_scratch.prompts import (
+    compress_research_human_message,
+    compress_research_system_prompt,
+    research_agent_prompt_with_mcp,
+)
+from deep_research_from_scratch.state_research import (
+    ResearcherOutputState,
+    ResearcherState,
+)
+from deep_research_from_scratch.utils import get_current_dir, get_today_str, think_tool
 
 # ===== CONFIGURATION =====
 
+load_dotenv()
 # MCP server configuration for filesystem access
 mcp_config = {
     "filesystem": {
@@ -150,7 +162,6 @@ def compress_research(state: ResearcherState) -> dict:
     This function filters out think_tool calls and focuses on substantive
     file-based research content from MCP tools.
     """
-
     system_message = compress_research_system_prompt.format(date=get_today_str())
     messages = [SystemMessage(content=system_message)] + state.get("researcher_messages", []) + [HumanMessage(content=compress_research_human_message)]
 
