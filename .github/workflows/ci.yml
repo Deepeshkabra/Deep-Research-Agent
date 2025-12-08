@@ -5,6 +5,7 @@
 name: CI - Lint, Test & Build
 
 on:
+  # Normal CI triggers
   push:
     branches:
       - '**'  # All branches
@@ -12,6 +13,8 @@ on:
     branches:
       - main
       - development
+  # Allow this workflow to be reused from other workflows (e.g. deploy.yml)
+  workflow_call:
 
 env:
   PYTHON_VERSION: '3.13'
