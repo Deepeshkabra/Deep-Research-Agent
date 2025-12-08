@@ -1,4 +1,3 @@
-
 """User Clarification and Research Brief Generation.
 
 This module implements the scoping phase of the research workflow, where we:
@@ -30,11 +29,12 @@ from deep_research_from_scratch.state_scope import (
     ResearchQuestion,
 )
 
-load_dotenv() 
+load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 # ===== UTILITY FUNCTIONS =====
+
 
 def get_today_str() -> str:
     """Get current date in a human-readable format."""
@@ -45,15 +45,25 @@ def get_today_str() -> str:
 # ===== CONFIGURATION =====
 
 # Initialize model
-model = ChatOpenAI(model="gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY, reasoning_effort="high", extra_body={
-    "provider": {
-      "order": ["deepinfra"],
-    }
-  },)
+model = ChatOpenAI(
+    model="gpt-oss-120b",
+    temperature=0.0,
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+    reasoning_effort="high",
+    extra_body={
+        "provider": {
+            "order": ["deepinfra"],
+        }
+    },
+)
 
 # ===== WORKFLOW NODES =====
 
-def clarify_with_user(state: AgentState) -> Command[Literal["write_research_brief", "__end__"]]:
+
+def clarify_with_user(
+    state: AgentState,
+) -> Command[Literal["write_research_brief", "__end__"]]:
     """Determine if the user's request contains sufficient information to proceed with research.
 
     Uses structured output to make deterministic decisions and avoid hallucination.
@@ -63,24 +73,28 @@ def clarify_with_user(state: AgentState) -> Command[Literal["write_research_brie
     structured_output_model = model.with_structured_output(ClarifyWithUser)
 
     # Invoke the model with clarification instructions
-    response = structured_output_model.invoke([
-        HumanMessage(content=clarify_with_user_instructions.format(
-            messages=get_buffer_string(messages=state["messages"]), 
-            date=get_today_str()
-        ))
-    ])
+    response = structured_output_model.invoke(
+        [
+            HumanMessage(
+                content=clarify_with_user_instructions.format(
+                    messages=get_buffer_string(messages=state["messages"]),
+                    date=get_today_str(),
+                )
+            )
+        ]
+    )
 
     # Route based on clarification need
     if response.need_clarification:
         return Command(
-            goto=END, 
-            update={"messages": [AIMessage(content=response.question)]}
+            goto=END, update={"messages": [AIMessage(content=response.question)]}
         )
     else:
         return Command(
-            goto="write_research_brief", 
-            update={"messages": [AIMessage(content=response.verification)]}
+            goto="write_research_brief",
+            update={"messages": [AIMessage(content=response.verification)]},
         )
+
 
 def write_research_brief(state: AgentState):
     """Transform the conversation history into a comprehensive research brief.
@@ -92,18 +106,23 @@ def write_research_brief(state: AgentState):
     structured_output_model = model.with_structured_output(ResearchQuestion)
 
     # Generate research brief from conversation history
-    response = structured_output_model.invoke([
-        HumanMessage(content=transform_messages_into_research_topic_prompt.format(
-            messages=get_buffer_string(state.get("messages", [])),
-            date=get_today_str()
-        ))
-    ])
+    response = structured_output_model.invoke(
+        [
+            HumanMessage(
+                content=transform_messages_into_research_topic_prompt.format(
+                    messages=get_buffer_string(state.get("messages", [])),
+                    date=get_today_str(),
+                )
+            )
+        ]
+    )
 
     # Update state with generated research brief and pass it to the supervisor
     return {
         "research_brief": response.research_brief,
-        "supervisor_messages": [HumanMessage(content=f"{response.research_brief}.")]
+        "supervisor_messages": [HumanMessage(content=f"{response.research_brief}.")],
     }
+
 
 # ===== GRAPH CONSTRUCTION =====
 
@@ -120,4 +139,3 @@ deep_researcher_builder.add_edge("write_research_brief", END)
 
 # Compile the workflow
 scope_research = deep_researcher_builder.compile()
-

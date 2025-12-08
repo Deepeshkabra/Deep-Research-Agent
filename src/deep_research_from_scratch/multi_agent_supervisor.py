@@ -1,4 +1,3 @@
-
 """Multi-agent supervisor for coordinating research across multiple specialized agents.
 
 This module implements a supervisor pattern where:
@@ -51,14 +50,19 @@ def get_notes_from_tool_calls(messages: list[BaseMessage]) -> list[str]:
     Returns:
         List of research note strings extracted from ToolMessage objects
     """
-    return [tool_msg.content for tool_msg in filter_messages(messages, include_types="tool")]
+    return [
+        tool_msg.content for tool_msg in filter_messages(messages, include_types="tool")
+    ]
+
 
 # Ensure async compatibility for Jupyter environments
 try:
     import nest_asyncio
+
     # Only apply if running in Jupyter/IPython environment
     try:
         from IPython import get_ipython
+
         if get_ipython() is not None:
             nest_asyncio.apply()
     except ImportError:
@@ -73,23 +77,30 @@ load_dotenv()
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 supervisor_tools = [ConductResearch, ResearchComplete, think_tool]
-supervisor_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY, extra_body={
-    "provider": {
-      "order": ["deepinfra"],
-    }
-  },)
+supervisor_model = ChatOpenAI(
+    model="openai/gpt-oss-120b",
+    temperature=0.0,
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+    extra_body={
+        "provider": {
+            "order": ["deepinfra"],
+        }
+    },
+)
 supervisor_model_with_tools = supervisor_model.bind_tools(supervisor_tools)
 
 # System constants
 # Maximum number of tool call iterations for individual researcher agents
 # This prevents infinite loops and controls research depth per topic
-max_researcher_iterations = 6 # Calls to think_tool + ConductResearch
+max_researcher_iterations = 6  # Calls to think_tool + ConductResearch
 
 # Maximum number of concurrent research agents the supervisor can launch
 # This is passed to the lead_researcher_prompt to limit parallel research tasks
 max_concurrent_researchers = 3
 
 # ===== SUPERVISOR NODES =====
+
 
 async def supervisor(state: SupervisorState) -> Command[Literal["supervisor_tools"]]:
     """Coordinate research activities.
@@ -109,9 +120,9 @@ async def supervisor(state: SupervisorState) -> Command[Literal["supervisor_tool
 
     # Prepare system message with current date and constraints
     system_message = lead_researcher_prompt.format(
-        date=get_today_str(), 
+        date=get_today_str(),
         max_concurrent_research_units=max_concurrent_researchers,
-        max_researcher_iterations=max_researcher_iterations
+        max_researcher_iterations=max_researcher_iterations,
     )
     messages = [SystemMessage(content=system_message)] + supervisor_messages
 
@@ -122,11 +133,14 @@ async def supervisor(state: SupervisorState) -> Command[Literal["supervisor_tool
         goto="supervisor_tools",
         update={
             "supervisor_messages": [response],
-            "research_iterations": state.get("research_iterations", 0) + 1
-        }
+            "research_iterations": state.get("research_iterations", 0) + 1,
+        },
     )
 
-async def supervisor_tools(state: SupervisorState) -> Command[Literal["supervisor", "__end__"]]:
+
+async def supervisor_tools(
+    state: SupervisorState,
+) -> Command[Literal["supervisor", "__end__"]]:
     """Execute supervisor decisions - either conduct research or end the process.
 
     Handles:
@@ -155,7 +169,7 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
     exceeded_iterations = research_iterations >= max_researcher_iterations
     no_tool_calls = not most_recent_message.tool_calls
     research_complete = any(
-        tool_call["name"] == "ResearchComplete" 
+        tool_call["name"] == "ResearchComplete"
         for tool_call in most_recent_message.tool_calls
     )
 
@@ -168,12 +182,14 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
         try:
             # Separate think_tool calls from ConductResearch calls
             think_tool_calls = [
-                tool_call for tool_call in most_recent_message.tool_calls 
+                tool_call
+                for tool_call in most_recent_message.tool_calls
                 if tool_call["name"] == "think_tool"
             ]
 
             conduct_research_calls = [
-                tool_call for tool_call in most_recent_message.tool_calls 
+                tool_call
+                for tool_call in most_recent_message.tool_calls
                 if tool_call["name"] == "ConductResearch"
             ]
 
@@ -184,7 +200,7 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
                     ToolMessage(
                         content=observation,
                         name=tool_call["name"],
-                        tool_call_id=tool_call["id"]
+                        tool_call_id=tool_call["id"],
                     )
                 )
 
@@ -192,12 +208,16 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
             if conduct_research_calls:
                 # Launch parallel research agents
                 coros = [
-                    researcher_agent.ainvoke({
-                        "researcher_messages": [
-                            HumanMessage(content=tool_call["args"]["research_topic"])
-                        ],
-                        "research_topic": tool_call["args"]["research_topic"]
-                    }) 
+                    researcher_agent.ainvoke(
+                        {
+                            "researcher_messages": [
+                                HumanMessage(
+                                    content=tool_call["args"]["research_topic"]
+                                )
+                            ],
+                            "research_topic": tool_call["args"]["research_topic"],
+                        }
+                    )
                     for tool_call in conduct_research_calls
                 ]
 
@@ -210,18 +230,20 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
                 # the supervisor to later retrieve these findings via get_notes_from_tool_calls()
                 research_tool_messages = [
                     ToolMessage(
-                        content=result.get("compressed_research", "Error synthesizing research report"),
+                        content=result.get(
+                            "compressed_research", "Error synthesizing research report"
+                        ),
                         name=tool_call["name"],
-                        tool_call_id=tool_call["id"]
-                    ) for result, tool_call in zip(tool_results, conduct_research_calls)
+                        tool_call_id=tool_call["id"],
+                    )
+                    for result, tool_call in zip(tool_results, conduct_research_calls)
                 ]
 
                 tool_messages.extend(research_tool_messages)
 
                 # Aggregate raw notes from all research
                 all_raw_notes = [
-                    "\n".join(result.get("raw_notes", [])) 
-                    for result in tool_results
+                    "\n".join(result.get("raw_notes", [])) for result in tool_results
                 ]
 
         except Exception as e:
@@ -235,17 +257,15 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
             goto=next_step,
             update={
                 "notes": get_notes_from_tool_calls(supervisor_messages),
-                "research_brief": state.get("research_brief", "")
-            }
+                "research_brief": state.get("research_brief", ""),
+            },
         )
     else:
         return Command(
             goto=next_step,
-            update={
-                "supervisor_messages": tool_messages,
-                "raw_notes": all_raw_notes
-            }
+            update={"supervisor_messages": tool_messages, "raw_notes": all_raw_notes},
         )
+
 
 # ===== GRAPH CONSTRUCTION =====
 

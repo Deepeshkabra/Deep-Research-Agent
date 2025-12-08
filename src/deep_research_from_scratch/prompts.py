@@ -4,7 +4,7 @@ This module contains all prompt templates used across the research workflow comp
 including user clarification, research brief generation, and report synthesis.
 """
 
-clarify_with_user_instructions="""
+clarify_with_user_instructions = """
 These are the messages that have been exchanged so far from the user asking for the report:
 <Messages>
 {messages}
@@ -87,7 +87,7 @@ Guidelines:
 - If the query is in a specific language, prioritize sources published in that language.
 """
 
-research_agent_prompt =  """You are a research assistant conducting research on the user's input topic. For context, today's date is {date}.
+research_agent_prompt = """You are a research assistant conducting research on the user's input topic. For context, today's date is {date}.
 
 <Task>
 Your job is to use tools to gather information about the user's input topic.

@@ -1,4 +1,3 @@
-
 """Research Agent Implementation.
 
 This module implements a research agent that can perform iterative web searches
@@ -36,16 +35,34 @@ tools = [tavily_search, think_tool]
 tools_by_name = {tool.name: tool for tool in tools}
 
 # Initialize models
-load_dotenv() 
+load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY)
+model = ChatOpenAI(
+    model="openai/gpt-oss-120b",
+    temperature=0.0,
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+)
 model_with_tools = model.bind_tools(tools)
-summarization_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY, max_tokens=64000)
-compress_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY, max_tokens=64000)
+summarization_model = ChatOpenAI(
+    model="openai/gpt-oss-120b",
+    temperature=0.0,
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+    max_tokens=64000,
+)
+compress_model = ChatOpenAI(
+    model="openai/gpt-oss-120b",
+    temperature=0.0,
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+    max_tokens=64000,
+)
 
 # ===== AGENT NODES =====
+
 
 def llm_call(state: ResearcherState):
     """Analyze current state and decide on next actions.
@@ -59,10 +76,12 @@ def llm_call(state: ResearcherState):
     return {
         "researcher_messages": [
             model_with_tools.invoke(
-                [SystemMessage(content=research_agent_prompt)] + state["researcher_messages"]
+                [SystemMessage(content=research_agent_prompt)]
+                + state["researcher_messages"]
             )
         ]
     }
+
 
 def tool_node(state: ResearcherState):
     """Execute all tool calls from the previous LLM response.
@@ -81,13 +100,13 @@ def tool_node(state: ResearcherState):
     # Create tool message outputs
     tool_outputs = [
         ToolMessage(
-            content=observation,
-            name=tool_call["name"],
-            tool_call_id=tool_call["id"]
-        ) for observation, tool_call in zip(observations, tool_calls)
+            content=observation, name=tool_call["name"], tool_call_id=tool_call["id"]
+        )
+        for observation, tool_call in zip(observations, tool_calls)
     ]
 
     return {"researcher_messages": tool_outputs}
+
 
 def compress_research(state: ResearcherState) -> dict:
     """Compress research findings into a concise summary.
@@ -96,25 +115,33 @@ def compress_research(state: ResearcherState) -> dict:
     a compressed summary suitable for the supervisor's decision-making.
     """
     system_message = compress_research_system_prompt.format(date=get_today_str())
-    messages = [SystemMessage(content=system_message)] + state.get("researcher_messages", []) + [HumanMessage(content=compress_research_human_message)]
+    messages = (
+        [SystemMessage(content=system_message)]
+        + state.get("researcher_messages", [])
+        + [HumanMessage(content=compress_research_human_message)]
+    )
     response = compress_model.invoke(messages)
 
     # Extract raw notes from tool and AI messages
     raw_notes = [
-        str(m.content) for m in filter_messages(
-            state["researcher_messages"], 
-            include_types=["tool", "ai"]
+        str(m.content)
+        for m in filter_messages(
+            state["researcher_messages"], include_types=["tool", "ai"]
         )
     ]
 
     return {
         "compressed_research": str(response.content),
-        "raw_notes": ["\n".join(raw_notes)]
+        "raw_notes": ["\n".join(raw_notes)],
     }
+
 
 # ===== ROUTING LOGIC =====
 
-def should_continue(state: ResearcherState) -> Literal["tool_node", "compress_research"]:
+
+def should_continue(
+    state: ResearcherState,
+) -> Literal["tool_node", "compress_research"]:
     """Determine whether to continue research or provide final answer.
 
     Determines whether the agent should continue the research loop or provide
@@ -133,6 +160,7 @@ def should_continue(state: ResearcherState) -> Literal["tool_node", "compress_re
     # Otherwise, we have a final answer
     return "compress_research"
 
+
 # ===== GRAPH CONSTRUCTION =====
 
 # Build the agent workflow
@@ -149,11 +177,11 @@ agent_builder.add_conditional_edges(
     "llm_call",
     should_continue,
     {
-        "tool_node": "tool_node", # Continue research loop
-        "compress_research": "compress_research", # Provide final answer
+        "tool_node": "tool_node",  # Continue research loop
+        "compress_research": "compress_research",  # Provide final answer
     },
 )
-agent_builder.add_edge("tool_node", "llm_call") # Loop back for more research
+agent_builder.add_edge("tool_node", "llm_call")  # Loop back for more research
 agent_builder.add_edge("compress_research", END)
 
 # Compile the agent

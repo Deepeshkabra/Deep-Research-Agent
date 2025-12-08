@@ -1,4 +1,3 @@
-
 """Research Utilities and Tools.
 
 This module provides search and content processing utilities for the research agent,
@@ -21,10 +20,12 @@ from deep_research_from_scratch.state_research import Summary
 
 # ===== UTILITY FUNCTIONS =====
 
+
 def get_today_str() -> str:
     """Get current date in a human-readable format."""
     now = datetime.now()
     return now.strftime("%a %b") + f" {now.day}, {now.year}"
+
 
 def get_current_dir() -> Path:
     """Get the current directory of the module.
@@ -39,22 +40,29 @@ def get_current_dir() -> Path:
     except NameError:  # __file__ is not defined
         return Path.cwd()
 
+
 # ===== CONFIGURATION =====
 
 load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-summarization_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY)
+summarization_model = ChatOpenAI(
+    model="openai/gpt-oss-120b",
+    temperature=0.0,
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+)
 tavily_client = TavilyClient()
 
 # ===== SEARCH FUNCTIONS =====
 
+
 def tavily_search_multiple(
-    search_queries: List[str], 
-    max_results: int = 3, 
-    topic: Literal["general", "news", "finance"] = "general", 
-    include_raw_content: bool = True, 
+    search_queries: List[str],
+    max_results: int = 3,
+    topic: Literal["general", "news", "finance"] = "general",
+    include_raw_content: bool = True,
 ) -> List[dict]:
     """Perform search using Tavily API for multiple queries.
 
@@ -74,11 +82,12 @@ def tavily_search_multiple(
             query,
             max_results=max_results,
             include_raw_content=include_raw_content,
-            topic=topic
+            topic=topic,
         )
         search_docs.append(result)
 
     return search_docs
+
 
 def summarize_webpage_content(webpage_content: str) -> str:
     """Summarize webpage content using the configured summarization model.
@@ -94,12 +103,15 @@ def summarize_webpage_content(webpage_content: str) -> str:
         structured_model = summarization_model.with_structured_output(Summary)
 
         # Generate summary
-        summary = structured_model.invoke([
-            HumanMessage(content=summarize_webpage_prompt.format(
-                webpage_content=webpage_content, 
-                date=get_today_str()
-            ))
-        ])
+        summary = structured_model.invoke(
+            [
+                HumanMessage(
+                    content=summarize_webpage_prompt.format(
+                        webpage_content=webpage_content, date=get_today_str()
+                    )
+                )
+            ]
+        )
 
         # Format summary with clear structure
         formatted_summary = (
@@ -111,7 +123,12 @@ def summarize_webpage_content(webpage_content: str) -> str:
 
     except Exception as e:
         print(f"Failed to summarize webpage: {str(e)}")
-        return webpage_content[:1000] + "..." if len(webpage_content) > 1000 else webpage_content
+        return (
+            webpage_content[:1000] + "..."
+            if len(webpage_content) > 1000
+            else webpage_content
+        )
+
 
 def deduplicate_search_results(search_results: List[dict]) -> dict:
     """Deduplicate search results by URL to avoid processing duplicate content.
@@ -125,12 +142,13 @@ def deduplicate_search_results(search_results: List[dict]) -> dict:
     unique_results = {}
 
     for response in search_results:
-        for result in response['results']:
-            url = result['url']
+        for result in response["results"]:
+            url = result["url"]
             if url not in unique_results:
                 unique_results[url] = result
 
     return unique_results
+
 
 def process_search_results(unique_results: dict) -> dict:
     """Process search results by summarizing content where available.
@@ -146,17 +164,15 @@ def process_search_results(unique_results: dict) -> dict:
     for url, result in unique_results.items():
         # Use existing content if no raw content for summarization
         if not result.get("raw_content"):
-            content = result['content']
+            content = result["content"]
         else:
             # Summarize raw content for better processing
-            content = summarize_webpage_content(result['raw_content'])
+            content = summarize_webpage_content(result["raw_content"])
 
-        summarized_results[url] = {
-            'title': result['title'],
-            'content': content
-        }
+        summarized_results[url] = {"title": result["title"], "content": content}
 
     return summarized_results
+
 
 def format_search_output(summarized_results: dict) -> str:
     """Format search results into a well-structured string output.
@@ -180,13 +196,17 @@ def format_search_output(summarized_results: dict) -> str:
 
     return formatted_output
 
+
 # ===== RESEARCH TOOLS =====
+
 
 @tool(parse_docstring=True)
 def tavily_search(
     query: str,
     max_results: Annotated[int, InjectedToolArg] = 3,
-    topic: Annotated[Literal["general", "news", "finance"], InjectedToolArg] = "general",
+    topic: Annotated[
+        Literal["general", "news", "finance"], InjectedToolArg
+    ] = "general",
 ) -> str:
     """Fetch results from Tavily search API with content summarization.
 
@@ -214,6 +234,7 @@ def tavily_search(
 
     # Format output for consumption
     return format_search_output(summarized_results)
+
 
 @tool(parse_docstring=True)
 def think_tool(reflection: str) -> str:

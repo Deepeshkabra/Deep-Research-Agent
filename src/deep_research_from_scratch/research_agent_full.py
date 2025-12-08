@@ -1,9 +1,8 @@
-
 """Full Multi-Agent Research System.
 
 This module integrates all components of the research system:
 - User clarification and scoping
-- Research brief generation  
+- Research brief generation
 - Multi-agent research coordination
 - Final report generation
 
@@ -31,14 +30,20 @@ from deep_research_from_scratch.utils import get_today_str
 load_dotenv()
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-writer_model = ChatOpenAI(model="openai/gpt-oss-120b", temperature=0.0, base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY, max_tokens=64000, extra_body={
-    "provider": {
-      "order": ["deepinfra"],
-      "allow_fallbacks": False  # Optional: prevents falling back to other providers
-    }
-  },)
+writer_model = ChatOpenAI(
+    model="openai/gpt-oss-120b",
+    temperature=0.0,
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+    max_tokens=64000,
+    extra_body={
+        "provider": {
+            "order": ["deepinfra"],
+            "allow_fallbacks": False,  # Optional: prevents falling back to other providers
+        }
+    },
+)
 
- 
 
 # ===== FINAL REPORT GENERATION =====
 
@@ -55,15 +60,18 @@ async def final_report_generation(state: AgentState):
     final_report_prompt = final_report_generation_prompt.format(
         research_brief=state.get("research_brief", ""),
         findings=findings,
-        date=get_today_str()
+        date=get_today_str(),
     )
 
-    final_report = await writer_model.ainvoke([HumanMessage(content=final_report_prompt)])
+    final_report = await writer_model.ainvoke(
+        [HumanMessage(content=final_report_prompt)]
+    )
 
     return {
-        "final_report": final_report.content, 
+        "final_report": final_report.content,
         "messages": [AIMessage(content=final_report.content)],
     }
+
 
 # ===== GRAPH CONSTRUCTION =====
 # Build the overall workflow

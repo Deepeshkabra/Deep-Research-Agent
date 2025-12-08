@@ -1,4 +1,3 @@
-
 """State Definitions and Pydantic Schemas for Research Scoping.
 
 This defines the state objects and structured schemas used for
@@ -15,9 +14,12 @@ from typing_extensions import Annotated, Sequence
 
 # ===== STATE DEFINITIONS =====
 
+
 class AgentInputState(MessagesState):
     """Input state for the full agent - only contains messages from user input."""
+
     pass
+
 
 class AgentState(MessagesState):
     """Main state for the full multi-agent research system.
@@ -38,7 +40,9 @@ class AgentState(MessagesState):
     # Final formatted research report
     final_report: str
 
+
 # ===== STRUCTURED OUTPUT SCHEMAS =====
+
 
 class ClarifyWithUser(BaseModel):
     """Schema for user clarification decision and questions."""
@@ -52,6 +56,7 @@ class ClarifyWithUser(BaseModel):
     verification: str = Field(
         description="Verify message that we will start research after the user has provided the necessary information.",
     )
+
 
 class ResearchQuestion(BaseModel):
     """Schema for structured research brief generation."""
