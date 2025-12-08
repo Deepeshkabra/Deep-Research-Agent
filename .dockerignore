@@ -1,0 +1,76 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+.eggs
+*.egg
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+.tox
+.nox
+
+# Virtual environments
+.venv
+venv
+env
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.cursor
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Documentation and notes
+Personal_notes/
+*.md
+!README.md
+!README-DEPLOYMENT.md
+
+# Tests (not needed in production image)
+tests/
+**/test_*.py
+**/*_test.py
+
+# Development files
+.editorconfig
+.pre-commit-config.yaml
+Makefile
+
+# CI/CD
+.github/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Deployment scripts (not needed in container)
+deploy/
+scripts/
+
+# Lock files (dependencies are installed fresh)
+uv.lock
+poetry.lock
+Pipfile.lock
+
+

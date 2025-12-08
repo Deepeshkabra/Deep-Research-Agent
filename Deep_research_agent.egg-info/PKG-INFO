@@ -17,6 +17,7 @@ Requires-Dist: ipykernel>=6.20.0
 Requires-Dist: tavily-python>=0.5.0
 Requires-Dist: langgraph-cli[inmem]>=0.4.7
 Requires-Dist: langchain-azure-ai>=1.0.0
+Requires-Dist: pytest>=9.0.2
 Provides-Extra: dev
 Requires-Dist: mypy>=1.11.1; extra == "dev"
 Requires-Dist: ruff>=0.6.1; extra == "dev"
